@@ -11,7 +11,8 @@ if [ ! -f "$powerlast" ]; then
 fi
 last=$(($(cat "$powerlast"))) # seconds since epoch
 now=$(($(date +%s)))          # seconds since epoch
-
+lastdate=$(date -d @$last)
+nowdate=$(date -d @$now)
 if [ $now -lt $last ]; then
   # first run ever
   echo "$now" > "$powerlast"
@@ -21,7 +22,7 @@ else
   echo "$now" > "$powerlast"
   gap=$(($now-$last))
   if [ $gap -gt $margin ]; then
-    echo "Power interruption detected! $gap exceeds $margin second limit."
+    echo "$nowdate: Power interruption detected at $lastdate! $gap exceeds $margin second limit."
     weekofyear=$(date -d @$last +%V)
     dayofyear=$(date -d @$last +%j)
     day=$(date -d @$last +%a)
