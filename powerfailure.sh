@@ -22,7 +22,7 @@ if [ $now -lt $last ]; then
 else
   # aim is to detect gaps greater than the run frequency.
   # echo "margin $margin frequency $frequency"
-  # echo "$now" > "$powerlast"
+  echo "$now" > "$powerlast"
   gap=$(($now-$last))
   if [ $gap -gt $margin ]; then
     # echo Reported: $(date)
