@@ -1,33 +1,37 @@
 #!/bin/bash
-mkdir -p ~/powerfailure
-powercsv=~/powerfailure/powerfailure.csv
-powerlast=~/powerfailure/powerlast.tmp
+powerdir=~/powerfailure
+mkdir -p "$powerdir"
+powercsv="$powerdir/powerfailure.csv"
+powertouch="$powerdir/powerlast.touch"
 frequency=60                  # seconds
 margin=$(($frequency+($frequency/2)))
 if [ ! -f "$powercsv" ]; then
   echo "timestamp,weekofyear,dayofyear,day,date,month,year,hour,minute" > "$powercsv"
 fi
-if [ ! -f "$powerlast" ]; then
-  echo "2000000000" > "$powerlast"
+if [ ! -f "$powertouch" ]; then
+  touch "$powertouch"
 fi
-last=$(($(cat "$powerlast"))) # seconds since epoch
-now=$(($(date +%s)))          # seconds since epoch
+last=$(date -r "$powertouch" +%s) # seconds since epoch
+now=$(($(date +%s)))              # seconds since epoch
 lastdate=$(date -d "@$last")
 nowdate=$(date -d "@$now")
 # echo "Last: $last, Now: $now, Last Date: $lastdate, Now Date: $nowdate"
 if [ $now -lt $last ]; then
   # first run ever
-  echo "$now" > "$powerlast"
+  echo "$now" > "last"
   echo "Reset power last variable"
+  echo "Reported: $(date)"
+  echo "Last: '$last' -> $(date -d "@$last")"
+  echo "Current: $now' -> $(date -d "@$now")"
 else
   # aim is to detect gaps greater than the run frequency.
   # echo "margin $margin frequency $frequency"
-  echo "$now" > "$powerlast"
+  touch "$powertouch"
   gap=$(($now-$last))
   if [ $gap -gt $margin ]; then
-    # echo Reported: $(date)
-    # echo Last: $last -> $(date -d "@$last")
-    # echo Current: $now -> $(date -d "@$now")
+    echo "Reported: $(date)"
+    echo "Last: '$last' -> $(date -d "@$last")"
+    echo "Current: '$now' -> $(date -d "@$now")"
     echo "$nowdate: Power interruption detected at $lastdate! $gap exceeds $margin second limit."
     weekofyear=$(date -d "@$last" +%V)
     dayofyear=$(date -d "@$last" +%j)
